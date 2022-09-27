@@ -25,7 +25,7 @@ import {
   mintOneToken,
   SetupState,
 } from "./candy-machine";
-import { AlertState, formatNumber, getAtaForMint, toDate } from "./utils";
+import { AlertState, getAtaForMint, toDate } from "./utils";
 import { MintCountdown } from "./MintCountdown";
 import { MintButton } from "./MintButton";
 import { GatewayProvider } from "@civic/solana-gateway-react";
@@ -67,7 +67,6 @@ const Home = (props: HomeProps) => {
   const [isWhitelistUser, setIsWhitelistUser] = useState(false);
   const [isPresale, setIsPresale] = useState(false);
   const [isValidBalance, setIsValidBalance] = useState(false);
-  const [discountPrice, setDiscountPrice] = useState<anchor.BN>();
   const [needTxnSplit, setNeedTxnSplit] = useState(true);
   const [setupTxn, setSetupTxn] = useState<SetupState>();
 
@@ -137,10 +136,8 @@ const Home = (props: HomeProps) => {
             }
             // is there a discount?
             if (cndy.state.whitelistMintSettings.discountPrice) {
-              setDiscountPrice(cndy.state.whitelistMintSettings.discountPrice);
               userPrice = cndy.state.whitelistMintSettings.discountPrice;
             } else {
-              setDiscountPrice(undefined);
               // when presale=false and discountPrice=null, mint is restricted
               // to whitelist users only
               if (!cndy.state.whitelistMintSettings.presale) {
@@ -509,11 +506,16 @@ const Home = (props: HomeProps) => {
                   wrap="nowrap"
                 >
                   <Grid item xs={3}>
-                    <Typography variant="body2" color="textSecondary">
-                      Remaining
+                    <Typography
+                      align="center"
+                      variant="body2"
+                      color="textSecondary"
+                    >
+                      Tickets Remaining
                     </Typography>
                     <Typography
                       variant="h6"
+                      align="center"
                       color="textPrimary"
                       style={{
                         fontWeight: "bold",
@@ -522,24 +524,7 @@ const Home = (props: HomeProps) => {
                       {`${itemsRemaining}`}
                     </Typography>
                   </Grid>
-                  <Grid item xs={4}>
-                    <Typography variant="body2" color="textSecondary">
-                      {isWhitelistUser && discountPrice
-                        ? "Discount Price"
-                        : "Price"}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      color="textPrimary"
-                      style={{ fontWeight: "bold" }}
-                    >
-                      {isWhitelistUser && discountPrice
-                        ? `◎ ${formatNumber.asNumber(discountPrice)}`
-                        : `◎ ${formatNumber.asNumber(
-                            candyMachine.state.price
-                          )}`}
-                    </Typography>
-                  </Grid>
+
                   <Grid item xs={5}>
                     {isActive && endDate && Date.now() < endDate.getTime() ? (
                       <>
@@ -556,7 +541,7 @@ const Home = (props: HomeProps) => {
                           display="block"
                           style={{ fontWeight: "bold" }}
                         >
-                          TO END OF MINT
+                          TO START OF EVENT
                         </Typography>
                       </>
                     ) : (
@@ -585,7 +570,7 @@ const Home = (props: HomeProps) => {
                               display="block"
                               style={{ fontWeight: "bold" }}
                             >
-                              UNTIL PUBLIC MINT
+                              TO START OF EVENT
                             </Typography>
                           )}
                       </>
@@ -639,14 +624,6 @@ const Home = (props: HomeProps) => {
               </MintContainer>
             </>
           )}
-          <Typography
-            variant="caption"
-            align="center"
-            display="block"
-            style={{ marginTop: 7, color: "grey" }}
-          >
-            Powered by METAPLEX
-          </Typography>
         </Paper>
       </Container>
 
