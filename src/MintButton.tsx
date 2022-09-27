@@ -160,7 +160,7 @@ export const MintButton = ({
   const handleClickBuy = useCallback(async () => {
     console.log("Link to OpenSea");
   }, []);
-  return isMinting || !isActive ? (
+  return !isActive ? (
     <CTAButton
       disabled={false}
       onClick={() => handleClickBuy()}
@@ -169,7 +169,7 @@ export const MintButton = ({
       SAGA NFT HOLDER ONLY
     </CTAButton>
   ) : (
-    <CTAButton onClick={() => handleClickMint()} variant="contained">
+    <CTAButton disabled={isMinting} onClick={handleClickMint} variant="contained">
       {getMintButtonContent()}
     </CTAButton>
   );
