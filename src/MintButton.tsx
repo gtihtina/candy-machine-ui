@@ -169,7 +169,11 @@ export const MintButton = ({
       SAGA NFT HOLDER ONLY
     </CTAButton>
   ) : (
-    <CTAButton disabled={isMinting} onClick={handleClickMint} variant="contained">
+    <CTAButton
+      disabled={isMinting}
+      onClick={handleClickMint}
+      variant="contained"
+    >
       {getMintButtonContent()}
     </CTAButton>
   );

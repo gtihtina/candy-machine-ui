@@ -30,6 +30,7 @@ import { MintCountdown } from "./MintCountdown";
 import { MintButton } from "./MintButton";
 import { GatewayProvider } from "@civic/solana-gateway-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { useMetaplex } from "./metaplex";
 
 const ConnectButton = styled(WalletDialogButton)`
   width: 100%;
@@ -69,6 +70,7 @@ const Home = (props: HomeProps) => {
   const [isValidBalance, setIsValidBalance] = useState(false);
   const [needTxnSplit, setNeedTxnSplit] = useState(true);
   const [setupTxn, setSetupTxn] = useState<SetupState>();
+  const { findCollectionMintIdsByOwner } = useMetaplex();
 
   const rpcUrl = props.rpcHost;
   const wallet = useWallet();
@@ -144,17 +146,12 @@ const Home = (props: HomeProps) => {
                 cndy.state.isWhitelistOnly = true;
               }
             }
-            // retrieves the whitelist token
-            const mint = new anchor.web3.PublicKey(
-              cndy.state.whitelistMintSettings.mint
-            );
-            const token = (
-              await getAtaForMint(mint, anchorWallet.publicKey)
-            )[0];
 
             try {
-              const balance = await connection.getTokenAccountBalance(token);
-              isWLUser = parseInt(balance.value.amount) > 0;
+              const collectionMintId = await findCollectionMintIdsByOwner();
+              isWLUser = collectionMintId.includes(
+                cndy.state.whitelistMintSettings.mint.toBase58()
+              );
               // only whitelist the user if the balance > 0
               setIsWhitelistUser(isWLUser);
 
@@ -390,6 +387,7 @@ const Home = (props: HomeProps) => {
             hideDuration: 7000,
           });
           refreshCandyMachineState("processed");
+          alert("Open calendar invite page.");
         } else if (status && !status.err) {
           setAlertState({
             open: true,

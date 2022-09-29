@@ -55,13 +55,26 @@ export const CIVIC = new anchor.web3.PublicKey(
 export const CIVIC_GATEKEEPER_NETWORK =
   "ignREusXmGrscGNUesoU9mxfds9AiYTezUKex2PsZV6";
 
+export const METAPLEX_PROGRAM_ID = new anchor.web3.PublicKey(
+  "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+);
+
 export const getAtaForMint = async (
   mint: anchor.web3.PublicKey,
   buyer: anchor.web3.PublicKey
 ): Promise<[anchor.web3.PublicKey, number]> => {
   return await anchor.web3.PublicKey.findProgramAddress(
-    [buyer.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    [buyer.toBuffer(), METAPLEX_PROGRAM_ID.toBuffer(), mint.toBuffer()],
     SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+  );
+};
+
+export const getMetadataForMint = async (
+  mint: anchor.web3.PublicKey
+): Promise<[anchor.web3.PublicKey, number]> => {
+  return await anchor.web3.PublicKey.findProgramAddress(
+    [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    METAPLEX_PROGRAM_ID
   );
 };
 

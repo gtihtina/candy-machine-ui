@@ -5,6 +5,7 @@ import Home from "./Home";
 import { DEFAULT_TIMEOUT } from "./connection";
 import { clusterApiUrl } from "@solana/web3.js";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 import {
   getPhantomWallet,
   getSlopeWallet,
@@ -72,14 +73,25 @@ const App = () => {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletDialogProvider>
-            <Home
-              candyMachineId={candyMachineId}
-              connection={connection}
-              txTimeout={DEFAULT_TIMEOUT}
-              rpcHost={rpcHost}
-              network={network}
-              error={error}
-            />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" />
+                <Route
+                  path="/mint"
+                  element={
+                    <Home
+                      candyMachineId={candyMachineId}
+                      connection={connection}
+                      txTimeout={DEFAULT_TIMEOUT}
+                      rpcHost={rpcHost}
+                      network={network}
+                      error={error}
+                    />
+                  }
+                />
+                <Route path="/invite">INVITE GOES HERE </Route>
+              </Routes>
+            </BrowserRouter>
           </WalletDialogProvider>
         </WalletProvider>
       </ConnectionProvider>
