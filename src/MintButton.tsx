@@ -3,7 +3,7 @@ import Button from "@material-ui/core/Button";
 import { CandyMachineAccount } from "./candy-machine";
 import { CircularProgress } from "@material-ui/core";
 import { GatewayStatus, useGateway } from "@civic/solana-gateway-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   findGatewayToken,
@@ -50,13 +50,7 @@ export const MintButton = ({
       return "SOLD OUT";
     } else if (isMinting) {
       return <CircularProgress />;
-    } else if (
-      candyMachine?.state.isPresale ||
-      candyMachine?.state.isWhitelistOnly
-    ) {
-      return "WHITELIST MINT";
     }
-
     return "MINT";
   };
 
@@ -106,65 +100,78 @@ export const MintButton = ({
     }
   }, [waitForActiveToken, gatewayStatus, onMint]);
 
-  return (
-    <CTAButton
-      disabled={isMinting || !isActive}
-      onClick={async () => {
-        if (candyMachine?.state.isActive && candyMachine?.state.gatekeeper) {
-          const network =
-            candyMachine.state.gatekeeper.gatekeeperNetwork.toBase58();
-          if (network === CIVIC_GATEKEEPER_NETWORK) {
-            if (gatewayStatus === GatewayStatus.ACTIVE) {
-              await onMint();
-            } else {
-              // setIsMinting(true);
-              setWaitForActiveToken(true);
-              await requestGatewayToken();
-              console.log("after: ", gatewayStatus);
-            }
-          } else if (
-            network === "ttib7tuX8PTWPqFsmUFQTj78MbRhUmqxidJRDv4hRRE" ||
-            network === "tibePmPaoTgrs929rWpu755EXaxC7M3SthVCf6GzjZt"
-          ) {
-            setClicked(true);
-            const gatewayToken = await findGatewayToken(
-              connection.connection,
+  const handleClickMint = useCallback(async () => {
+    if (candyMachine?.state.isActive && candyMachine?.state.gatekeeper) {
+      const network =
+        candyMachine.state.gatekeeper.gatekeeperNetwork.toBase58();
+      if (network === CIVIC_GATEKEEPER_NETWORK) {
+        if (gatewayStatus === GatewayStatus.ACTIVE) {
+          await onMint();
+        } else {
+          // setIsMinting(true);
+          setWaitForActiveToken(true);
+          await requestGatewayToken();
+          console.log("after: ", gatewayStatus);
+        }
+      } else if (
+        network === "ttib7tuX8PTWPqFsmUFQTj78MbRhUmqxidJRDv4hRRE" ||
+        network === "tibePmPaoTgrs929rWpu755EXaxC7M3SthVCf6GzjZt"
+      ) {
+        setClicked(true);
+        const gatewayToken = await findGatewayToken(
+          connection.connection,
+          wallet.publicKey!,
+          candyMachine.state.gatekeeper.gatekeeperNetwork
+        );
+
+        if (gatewayToken?.isValid()) {
+          await onMint();
+        } else {
+          window.open(
+            `https://verify.encore.fans/?gkNetwork=${network}`,
+            "_blank"
+          );
+
+          const gatewayTokenAddress =
+            await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
               wallet.publicKey!,
               candyMachine.state.gatekeeper.gatekeeperNetwork
             );
 
-            if (gatewayToken?.isValid()) {
-              await onMint();
-            } else {
-              window.open(
-                `https://verify.encore.fans/?gkNetwork=${network}`,
-                "_blank"
-              );
-
-              const gatewayTokenAddress =
-                await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
-                  wallet.publicKey!,
-                  candyMachine.state.gatekeeper.gatekeeperNetwork
-                );
-
-              setWebSocketSubscriptionId(
-                onGatewayTokenChange(
-                  connection.connection,
-                  gatewayTokenAddress,
-                  () => setVerified(true),
-                  "confirmed"
-                )
-              );
-            }
-          } else {
-            setClicked(false);
-            throw new Error(`Unknown Gatekeeper Network: ${network}`);
-          }
-        } else {
-          await onMint();
-          setClicked(false);
+          setWebSocketSubscriptionId(
+            onGatewayTokenChange(
+              connection.connection,
+              gatewayTokenAddress,
+              () => setVerified(true),
+              "confirmed"
+            )
+          );
         }
-      }}
+      } else {
+        setClicked(false);
+        throw new Error(`Unknown Gatekeeper Network: ${network}`);
+      }
+    } else {
+      await onMint();
+      setClicked(false);
+    }
+  }, [candyMachine, connection, gatewayStatus, wallet]);
+
+  const handleClickBuy = useCallback(async () => {
+    console.log("Link to OpenSea");
+  }, []);
+  return !isActive ? (
+    <CTAButton
+      disabled={false}
+      onClick={() => handleClickBuy()}
+      variant="contained"
+    >
+      SAGA NFT HOLDER ONLY
+    </CTAButton>
+  ) : (
+    <CTAButton
+      disabled={isMinting}
+      onClick={handleClickMint}
       variant="contained"
     >
       {getMintButtonContent()}
